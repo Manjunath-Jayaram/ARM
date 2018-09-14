@@ -1,0 +1,15 @@
+{
+  "$schema": "https://schema.management.azure.com/schemas/2015-01-01/deploymentParameters.json#",
+  "contentVersion": "1.0.0.0",
+  "parameters": {
+    "setup-sites-non-prod-db-serverAdminLogin": {
+      "value": "mmsg"
+    },
+    "staging-setup.remserv.com.auName": {
+      "value": "staging-setup.remserv.com.au"
+    },
+    "staging-setup.remservsalarypackage.com.auName": {
+      "value": "staging-setup.remservsalarypackage.com.au"
+    }
+  }
+}

@@ -1,0 +1,233 @@
+{
+  "$schema": "https://schema.management.azure.com/schemas/2015-01-01/deploymentTemplate.json#",
+  "contentVersion": "1.0.0.0",
+  "parameters": {
+    "setup-sites-non-prod-service-planName": {
+      "type": "string",
+      "defaultValue": "setup-sites-non-prod-service-plan",
+      "minLength": 1
+    },
+    "setup-sites-non-prod-service-planSkuName": {
+      "type": "string",
+      "defaultValue": "F1",
+      "allowedValues": [
+        "F1",
+        "D1",
+        "B1",
+        "B2",
+        "B3",
+        "S1",
+        "S2",
+        "S3",
+        "P1",
+        "P2",
+        "P3",
+        "P4"
+      ],
+      "metadata": {
+        "description": "Describes plan's pricing tier and capacity. Check details at https://azure.microsoft.com/en-us/pricing/details/app-service/"
+      }
+    },
+    "setup-sites-non-prod-db-serverAdminLogin": {
+      "type": "string",
+      "defaultValue":  "mmsg",
+      "minLength": 1
+    },
+    "setup-sites-non-prod-db-serverAdminLoginPassword": {
+      "type": "securestring",
+      "defaultValue": "R3cycl4bl3!P0ss1bl3"
+    },
+    "staging-setup.remserv.com.auName": {
+      "type": "string",
+      "minLength": 1
+    },
+    "staging-setup.remserv.com.auCollation": {
+      "type": "string",
+      "minLength": 1,
+      "defaultValue": "SQL_Latin1_General_CP1_CI_AS"
+    },
+    "staging-setup.remserv.com.auEdition": {
+      "type": "string",
+      "defaultValue": "Basic",
+      "allowedValues": [
+        "Basic",
+        "Standard",
+        "Premium"
+      ]
+    },
+    "staging-setup.remserv.com.auRequestedServiceObjectiveName": {
+      "type": "string",
+      "defaultValue": "Basic",
+      "allowedValues": [
+        "Basic",
+        "S0",
+        "S1",
+        "S2",
+        "P1",
+        "P2",
+        "P3"
+      ],
+      "metadata": {
+        "description": "Describes the performance level for Edition"
+      }
+    },
+    "staging-setup.remservsalarypackage.com.auName": {
+      "type": "string",
+      "minLength": 1
+    },
+    "staging-setup.remservsalarypackage.com.auCollation": {
+      "type": "string",
+      "minLength": 1,
+      "defaultValue": "SQL_Latin1_General_CP1_CI_AS"
+    },
+    "staging-setup.remservsalarypackage.com.auEdition": {
+      "type": "string",
+      "defaultValue": "Basic",
+      "allowedValues": [
+        "Basic",
+        "Standard",
+        "Premium"
+      ]
+    },
+    "staging-setup.remservsalarypackage.com.auRequestedServiceObjectiveName": {
+      "type": "string",
+      "defaultValue": "Basic",
+      "allowedValues": [
+        "Basic",
+        "S0",
+        "S1",
+        "S2",
+        "P1",
+        "P2",
+        "P3"
+      ],
+      "metadata": {
+        "description": "Describes the performance level for Edition"
+      }
+    }
+    },
+  "variables": {
+    "setup-remserv-com-au-npName": "[concat('setup-remserv-com-au-np-', uniqueString(resourceGroup().id))]",
+    "setup-remserv-salarypackage-com-au-npName": "[concat('setup-remserv-salarypackage-com-au-np-', uniqueString(resourceGroup().id))]",
+    "setup-sites-non-prod-db-serverName": "[concat('setup-sites-non-prod-db-server', uniqueString(resourceGroup().id))]"
+    },
+  "resources": [
+    {
+      "name": "[variables('setup-remserv-com-au-npName')]",
+      "type": "Microsoft.Web/sites",
+      "location": "[resourceGroup().location]",
+      "apiVersion": "2015-08-01",
+      "dependsOn": [
+        "[resourceId('Microsoft.Web/serverfarms', parameters('setup-sites-non-prod-service-planName'))]"
+      ],
+      "tags": {
+        "[concat('hidden-related:', resourceId('Microsoft.Web/serverfarms', parameters('setup-sites-non-prod-service-planName')))]": "Resource",
+        "displayName": "setup-remserv-com-au-np"
+      },
+      "properties": {
+        "name": "[variables('setup-remserv-com-au-npName')]",
+        "serverFarmId": "[resourceId('Microsoft.Web/serverfarms', parameters('setup-sites-non-prod-service-planName'))]"
+      }
+    },
+    {
+      "name": "[parameters('setup-sites-non-prod-service-planName')]",
+      "type": "Microsoft.Web/serverfarms",
+      "location": "[resourceGroup().location]",
+      "apiVersion": "2015-08-01",
+      "sku": {
+        "name": "[parameters('setup-sites-non-prod-service-planSkuName')]"
+      },
+      "dependsOn": [ ],
+      "tags": {
+        "displayName": "setup-sites-non-prod-service-plan"
+      },
+      "properties": {
+        "name": "[parameters('setup-sites-non-prod-service-planName')]",
+        "numberOfWorkers": 1
+      }
+    },
+    {
+      "name": "[variables('setup-remserv-salarypackage-com-au-npName')]",
+      "type": "Microsoft.Web/sites",
+      "location": "[resourceGroup().location]",
+      "apiVersion": "2015-08-01",
+      "dependsOn": [
+        "[resourceId('Microsoft.Web/serverfarms', parameters('setup-sites-non-prod-service-planName'))]"
+      ],
+      "tags": {
+        "[concat('hidden-related:', resourceId('Microsoft.Web/serverfarms', parameters('setup-sites-non-prod-service-planName')))]": "Resource",
+        "displayName": "setup-remserv-salarypackage-com-au-np"
+      },
+      "properties": {
+        "name": "[variables('setup-remserv-salarypackage-com-au-npName')]",
+        "serverFarmId": "[resourceId('Microsoft.Web/serverfarms', parameters('setup-sites-non-prod-service-planName'))]"
+      }
+    },
+    {
+      "name": "[variables('setup-sites-non-prod-db-serverName')]",
+      "type": "Microsoft.Sql/servers",
+      "location": "[resourceGroup().location]",
+      "apiVersion": "2014-04-01-preview",
+      "dependsOn": [ ],
+      "tags": {
+        "displayName": "setup-sites-non-prod-db-server"
+      },
+      "properties": {
+        "administratorLogin": "[parameters('setup-sites-non-prod-db-serverAdminLogin')]",
+        "administratorLoginPassword": "[parameters('setup-sites-non-prod-db-serverAdminLoginPassword')]"
+      },
+      "resources": [
+        {
+          "name": "AllowAllWindowsAzureIps",
+          "type": "firewallrules",
+          "location": "[resourceGroup().location]",
+          "apiVersion": "2014-04-01-preview",
+          "dependsOn": [
+            "[resourceId('Microsoft.Sql/servers', variables('setup-sites-non-prod-db-serverName'))]"
+          ],
+          "properties": {
+            "startIpAddress": "202.58.247.62",
+            "endIpAddress": "202.58.247.62"
+          }
+        },
+        {
+          "name": "[parameters('staging-setup.remserv.com.auName')]",
+          "type": "databases",
+          "location": "[resourceGroup().location]",
+          "apiVersion": "2014-04-01-preview",
+          "dependsOn": [
+            "[resourceId('Microsoft.Sql/servers', variables('setup-sites-non-prod-db-serverName'))]"
+          ],
+          "tags": {
+            "displayName": "staging-setup.remserv.com.au"
+          },
+          "properties": {
+            "collation": "[parameters('staging-setup.remserv.com.auCollation')]",
+            "edition": "[parameters('staging-setup.remserv.com.auEdition')]",
+            "maxSizeBytes": "1073741824",
+            "requestedServiceObjectiveName": "[parameters('staging-setup.remserv.com.auRequestedServiceObjectiveName')]"
+          }
+        },
+        {
+          "name": "[parameters('staging-setup.remservsalarypackage.com.auName')]",
+          "type": "databases",
+          "location": "[resourceGroup().location]",
+          "apiVersion": "2014-04-01-preview",
+          "dependsOn": [
+            "[resourceId('Microsoft.Sql/servers', variables('setup-sites-non-prod-db-serverName'))]"
+          ],
+          "tags": {
+            "displayName": "staging-setup.remservsalarypackage.com.au"
+          },
+          "properties": {
+            "collation": "[parameters('staging-setup.remservsalarypackage.com.auCollation')]",
+            "edition": "[parameters('staging-setup.remservsalarypackage.com.auEdition')]",
+            "maxSizeBytes": "1073741824",
+            "requestedServiceObjectiveName": "[parameters('staging-setup.remservsalarypackage.com.auRequestedServiceObjectiveName')]"
+          }
+        }
+      ]
+    }
+  ],
+  "outputs": {}
+}
